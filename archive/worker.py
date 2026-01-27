@@ -1,11 +1,5 @@
 import pika
-import json
-
-# Function
-def process_value(message):
-    data = json.loads(message)
-    v = data['value']
-    return v*2
+import time
 
 # 1. Connect to RabbitMQ
 connection = pika.BlockingConnection(
@@ -24,12 +18,9 @@ channel.basic_qos(prefetch_count=1)  # Only accept 1 message / time
 def callback(ch, method, properties, body):
     print(" Received:", body.decode())
     
-    # Process data & function
-    message = body.decode()
-    result = process_value(message)
-    print (f"Done! Result: {result}")
+    time.sleep(1)  # Similate work
     
-    # Acknowledge
+    print (" Done!")
     ch.basic_ack(delivery_tag=method.delivery_tag)
     
 channel.basic_consume(

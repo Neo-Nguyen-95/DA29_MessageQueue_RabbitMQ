@@ -1,5 +1,4 @@
 import pika
-import json
 
 # 1. Create connection
 connection = pika.BlockingConnection(
@@ -16,13 +15,13 @@ channel.queue_declare(queue="task_queue", durable=True)
 channel.basic_publish(
     exchange='',
     routing_key='task_queue',
-    body=json.dumps({"value": 25}),
+    body='Hello RabbitMQ!',
     properties=pika.BasicProperties(
         delivery_mode=2  # Make message persistent
         )
     )
 
-print("Sent something!")
+print(" Sent 'Hello RabbitMQ!'")
 
 # 5. Close connection
 connection.close()
