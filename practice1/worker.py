@@ -1,31 +1,13 @@
 import pika
 import json
 import time
-import random
-import redis
 
-#%% PREP CLIENT
-# REDIS
-redis_client = redis.Redis(
-    host='localhost',
-    port=6379,
-    decode_responses=True
-)
-
-#%% RABBIT
 # Function
-def process_recommendation(message):
+def process_value(message):
     data = json.loads(message)
-    student_code = data.get('student_code')
-    topic = data.get('topic_lv4')
-    kc1 = topic + '_kc1'
-    kc2 = topic + '_kc2'
-    question1 = random.sample(range(1, 100), k=5)
-    question2 = random.sample(range(1, 100), k=5)
-
-    time.sleep(4)
-
-    return {kc1: question1, kc2: question2}
+    result = data.get('action')
+    time.sleep(2)
+    return result
 
 # 1. Connect to RabbitMQ
 connection = pika.BlockingConnection(
@@ -46,24 +28,11 @@ def callback(ch, method, properties, body):
     
     # Process data & function
     message = body.decode()
-    data = json.loads(message)
-    submit_id = data.get('submit_id')
-
-    result = process_recommendation(message)
-
+    result = process_value(message)
     print (f"Done! Result: {result}")
-
-    # Store result to redis
-    redis_client.setex(
-        name=f"result:{submit_id}",
-        time=600,
-        value=json.dumps(result)
-    )
     
     # Acknowledge
     ch.basic_ack(delivery_tag=method.delivery_tag)
-
-    return result
     
 channel.basic_consume(
     queue='task_queue',
